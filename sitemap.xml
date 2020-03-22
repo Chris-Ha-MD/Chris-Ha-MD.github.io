@@ -4,11 +4,31 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2020-03-21T22:49:40+09:00</lastmod>
+    <lastmod>2020-03-22T14:23:28+09:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/resnet/</loc>
+    <lastmod>2020-03-22T14:23:28+09:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/posts/resnets/resnet-1/</loc>
+    <lastmod>2020-03-22T14:23:28+09:00</lastmod>
   </url>
   
   <url>
     <loc>/tags/</loc>
+    <lastmod>2020-03-22T14:23:28+09:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/posts/</loc>
+    <lastmod>2020-03-21T22:54:23+09:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/posts/resnets/</loc>
     <lastmod>2020-03-21T22:49:40+09:00</lastmod>
   </url>
   

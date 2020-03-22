@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="-&amp;gt; from paper to code &amp;lt;-
+A Brief History of ResNet I love ResNets. I just do. I can’t stop thinking about them. They are simple yet effective. It inspired so many models that came after while still holding its own. Many ResNets or variations of it serve as the backbone of important image detection pipelines. Although they are already 5 years old at the time of writing, I do not see them going away anytime soon." />
+<meta name="keywords" content=", ResNet" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="/posts/resnets/resnet-1/" />
+
+
+    <title>
+        
+            ResNets under the hood - 1 :: Chris Ha&#39;s ML Blog  — ResNets, Unets
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.7bfbbe12786fa0ded4b4c0d792cbb36a5bd0bdb0b856dde57aa7b1f6fe0f2b87.css">
+
+
+
+
+<meta itemprop="name" content="ResNets under the hood - 1">
+<meta itemprop="description" content="-&gt; from paper to code &lt;-
+A Brief History of ResNet I love ResNets. I just do. I can’t stop thinking about them. They are simple yet effective. It inspired so many models that came after while still holding its own. Many ResNets or variations of it serve as the backbone of important image detection pipelines. Although they are already 5 years old at the time of writing, I do not see them going away anytime soon.">
+<meta itemprop="datePublished" content="2020-03-22T14:23:28&#43;09:00" />
+<meta itemprop="dateModified" content="2020-03-22T14:23:28&#43;09:00" />
+<meta itemprop="wordCount" content="2567">
+<meta itemprop="image" content="/"/>
+
+
+
+<meta itemprop="keywords" content="ResNet," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/"/>
+
+<meta name="twitter:title" content="ResNets under the hood - 1"/>
+<meta name="twitter:description" content="-&gt; from paper to code &lt;-
+A Brief History of ResNet I love ResNets. I just do. I can’t stop thinking about them. They are simple yet effective. It inspired so many models that came after while still holding its own. Many ResNets or variations of it serve as the backbone of important image detection pipelines. Although they are already 5 years old at the time of writing, I do not see them going away anytime soon."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2020-03-22 14:23:28 &#43;0900 KST" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">Exploring ML</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="/posts">Blog</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>13 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="/posts/resnets/resnet-1/">ResNets under the hood - 1</a>
+            </h1>
+                <hr />
+                <aside id="toc">
+                <div class="toc-title">Table of Contents</div>
+                    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#a-brief-history-of-resnet">A Brief History of ResNet</a></li>
+    <li><a href="#deep-residual-learning-for-image-recognition">Deep Residual Learning for Image Recognition</a></li>
+    <li><a href="#but-what-about-resnet-20324456-or-resnet-v1d-v15-v2-other-variants-of-resnet">But what about ResNet 20,32,44,56? or ResNet v1d, v1.5, v2? (Other variants of ResNet)</a></li>
+  </ul>
+</nav>
+                </aside>
+                <hr />
+
+            
+
+            <div class="post-content">
+                <p>-&gt; from paper to code &lt;-</p>
+<h2 id="a-brief-history-of-resnet">A Brief History of ResNet</h2>
+<p>I love ResNets. I just do. I can’t stop thinking about them. They are simple yet effective. It inspired so many models that came after while still holding its own. Many ResNets or variations of it serve as the backbone of important image detection pipelines. Although they are already 5 years old at the time of writing, I do not see them going away anytime soon. Even though the emerging EfficientNets show promise, the recently published assembled-net paper shows us that ResNets are far from irrelevant.</p>
+<p>Unfortunately, however, many articles and videos discussing convolutional neural networks start with AlexNets, VGGs, inception, and taper off with ResNets. Many articles do illustrate what ResNets are and how they work so well, but few really go down to their nitty gritty details, implementation quirks and variations. That is what I am trying to do.</p>
+<p>I will start this chain of articles by first shortly summarizing the original ResNet paper and the original model as is. The original models, as they were described in the paper and used to win the 2015 ILSVRC and COCO competitions, are available on <a href="https://github.com/KaimingHe/deep-residual-networks">github</a>.</p>
+<p>Venerable as they are, they were first created using the caffe framework. Coming from a PyTorch background, they are recognizable, but I am not confident conducting a line by line analysis of said model. Instead I will focus on the TorchVision version of those models available <a href="https://github.com/pytorch/vision/blob/master/torchvision/models/ResNet.py">here</a>. I will conduct a line by line analysis in a later article.</p>
+<p>One of the most common and well studied ResNet is the 50 layer version, the ResNet50. Not all ResNet50s come the same however, as there are several widely known and used versions each called ResNet50 but with incompatible differences.</p>
+<p>Although a CNN model is much more than its architecture, I will primarily focus on the architecture and structures only. Please note that models with equal architectures may behave differently depending on how they are initialized and trained.</p>
+<p>To closely examine the ResNet architecture themselves, it helps to read the original papers that introduced them. Lets dive right into the first paper.</p>
+<h2 id="deep-residual-learning-for-image-recognition">Deep Residual Learning for Image Recognition</h2>
+<p>This paper was first published in 2015 by researchers from Microsoft Asia. By building upon the previous successful deep network the VGG and exploring identity mappings, this paper introduced to the world what is now known as ResNet. These identity mappings are referred to as shortcuts, residual or skip connections depending on the in other papers or architectures.</p>
+<p><img src="./DLRLIR_figure2.png" alt="Figure 2" title="Figure 2 from Deep Residual Learning for Image Recognition"></p>
+<p>These skip connections allow activations (or signals) in the forward pass or gradients(or error updates) to freely pass through deeper layers of the network. Beyond this basic intuition, they are implemented in various different ways including concatenation, elementwise addition etc. There still seems much to be studied regarding how they work.</p>
+<p>The following is an excerpt from the paper that captures its design decisions.</p>
+<p>“The convolutional layers mostly have 3×3 filters and follow two simple design rules: (i) for the same output feature map size, the layers have the same number of filters; and (ii) if the feature map size is halved, the number of filters is doubled so as to preserve the time complexity per layer. We perform downsampling directly by convolutional layers that have a stride of 2. The network ends with a global average pooling layer and a 1000-way fully-connected layer with softmax. The total number of weighted layers is 34.”</p>
+<p>The authors first derived a plain model <em>without</em> skip connections modeled after VGG. From this plain 34 layer baseline, they added <strong>2 kinds of skip connections</strong>. When the input feature map (start of the skip) and the dimension of the output feature map (destination of the skip) are identical, a simple addition operation can be usedv(solid lines). But when the dimensions are different there must be a way to reconcile the difference. Since the feature map size is either <strong>constant</strong> or <strong>halved</strong> going from input toward output, the difference in dimension is a factor of 2 both in the number of channels and size of the feature map. To cross this feature map difference, either a <strong>zero padded identity mapping</strong> or a <strong>1x1 convolution</strong> to project across can be used. These residual connections give ResNets the high accuracy and trainability they are known for.</p>
+<p><img src="./DLRLIR_table1.png" alt="Table 1" title="Table 1 showing ResNets of varying sizes."></p>
+<p>Looking at Table 1 you can see the parameters of the various ResNets described. Interestingly, they all share a <strong>common ‘head’ and a ‘stem’</strong>. The <strong>head</strong> is the last part starting with the average pool, 1000 way fully connected layer ending with a softmax layer for output. Also, the input layer consisting of 64 channels of a 7x7 convolution with stride 2 followed by a 3x3 max pool with a stride of 2 is also common to all of the layers.
+This part, which is referred to as <strong>conv1</strong> in the table, is often referred to as the ‘stem’ of the ResNet. Some consider the 3x3 maxpool layer also part of the stem since it is common to the above 5 ResNets, but it is sometimes missing or replaced in other variants of ResNets. It is worth noting that the original paper nor the codebase do not refer to them as ‘stem’ as part of official nomenclature.</p>
+<p>Before I go further I would like to describe a convention when describing neural networks with the words start, stem, first, input, output, head. The signal goes from the <strong>start, stem, or input</strong> layer towards the <strong>last, head(or top), output</strong> layer where it is often classified. Also signals flows from <strong>left to right, bottom to top</strong> and changes from input to output. This might not hold for all networks (such as the inception family with multiple auxiliary classifiers)</p>
+<p>In between the head and the stem are 4 convolutional layers, or ‘stages’. Although the table refers to them as <strong>‘layers’</strong> each called conv2_x, conv3_x, conv4_x and conv5_x, it is often called as <strong>“stages”</strong> as they each include many individual 3x3 and 1x1 convolutional layers. Some refer to these stages starting from 2, considering the stem the first stage. I find it easy to reason when considering them on their own. As such, I will refer these as stage 1 through 4. (Thus conv2_x excluding the MaxPool layer becomes stage 1, conv3_x becomes stage 2 so on and so forth).In other words, ResNets consist of a stem, 4 intermediate stages, and a head.</p>
+<p>Within each stage are the same blocks, and between each block is a skip connection.
+As aforementioned, when one stage ends and another begins, the number of filters is <strong>doubled, while the size of the feature map is halved</strong> in each of its dimensions.</p>
+<p>After considering the cost and benefit of using zero padding and 1x1 convolutions the authors decided to use 1x1 projections to gap this difference. Do note that skip connections can be done in other ways. Identity concatenation (which trades more memory footprint for less computation), different points of entry(inverted bottlenecks), multiple destinations (which functions as feature reuse), convolutions and nonlinearity in between the skip connections(to gap a difference in dimension or to increase expressivity) can and have been done to yield various different models.</p>
+<p><img src="./DLRLIR_figure3.png" alt="Figure 3" title="Figure 3 from Deep Residual Learning for Image Recognition. Showing a single block in the intermediate stages."></p>
+<p>The above figure shows a single basic block from stage 1 of a ResNet34. The incoming signal splits out to an outbound skip connection, followed by two consecutive 3x3 convolutions of the same size, whose outputs are joined by the previously mentioned skip connection which is added elementwise.</p>
+<p>The first block of each stage is called the downsampling block. It is called that because it performs the necessary downsampling in input feature dimensions with a strided convolution. The downsampling block also is the first block to have its filter count doubled.</p>
+<p>ResNet18 and ResNet34 intermediate stages feature only 3x3 convolutional filters of stride 1. Two consecutive 3x3 filters comprise <strong>one block</strong> and <strong>between</strong> these blocks are skip connections.</p>
+<p>The difference between ResNet18 and ResNet34 is the number of blocks in each stage. There are <strong>two blocks</strong> in each stage of ResNet18 (4 stages each with 2 blocks each with 2 convolutional layers plus the head and stem equals 18), while there are <strong>3,4,6,3 blocks</strong> for each of ResNet34’s stages (2 + (3+4+6+3) * 2 equals 34).
+With this almost doubling increase comes an almost doubling of FLOPs.</p>
+<p>Going from ResNet34 to ResNet50, we discover that though the block count of each layer remains constant, there is a fundamental difference in the block structure.
+Because of concerns on the training time, the authors employ a “bottleneck” block.</p>
+<p><img src="./DLRLIR_figure5.png" alt="Figure 5" title="Figure 3 from Deep Residual Learning for Image Recognition. Depicting a bottleneck block."></p>
+<p>Instead of two consecutive 3x3 convolutions, the bottleneck block employs 1x1 convolutions <strong>before and after</strong> a single 3x3 convolution. What is more, the first convolution is of the <strong>same</strong> channel number of the original 3x3 convolution, but the final 1x1 layer has <strong>4 times the channels</strong>. Note that from the architectural principles that we’ve uncovered so far, it is apparent just from the above figure that it describes blocks from the first stage (evident from the main channel number of <strong>64</strong>).</p>
+<p>Considering the fact that each block is repeated several times in each stage, we can see that the channel count repeatedly increases 4 fold (the “expansion ratio is 4”) <strong>within a block</strong> and comes back down 4 fold going into the <strong>next block</strong>. Like a bottleneck.</p>
+<p>The result of changing the block from basic to bottleneck is quite remarkable.
+From ResNet34 to ResNet50, the ‘layer’ count is increased to 50 (4 stages each with 3,4,6, and 3 blocks, with each block having 3 layers. Plus the head and stem). But the <em><strong>FLOPs count is only changed by around 5%.</strong></em></p>
+<p>ResNet101 further increases block number in stage 3 and 152 increases it in stages 2 and 3, with concomitant increases in FLOPs and parameters.</p>
+<p>It is worth mentioning that <em><strong>not all FLOPs are the same</strong></em>. If the FLOPs are held constant, 3x3 convolutions can be done with higher throughput then with 1x1 convolutions in the GPU. Although FLOPs count is used to compare the computational complexity and requirement for a given architecture, the specific throughput, latency, memory footprint tradeoff is different for each platform and must be considered in a case by case basis.</p>
+<p>Unless otherwise noted all convolutional layers are followed by a Batch Normalization and a ReLU activation.</p>
+<p><img src="./BoT_figure1.png" alt="Figure 1" title="Figure 1 from Bag of Tricks for Image Classification with Convolutional Neural Network."></p>
+<h2 id="but-what-about-resnet-20324456-or-resnet-v1d-v15-v2-other-variants-of-resnet">But what about ResNet 20,32,44,56? or ResNet v1d, v1.5, v2? (Other variants of ResNet)</h2>
+<p>The previous section describes ResNets designed for ImageNet. The images vary in resolution but it is commonly trained and tested on patches of around 256x256 pixels. The above ResNets follow VGG convention of 224x224 patches.</p>
+<p>In the original paper, the authors suggest a slightly different model for CIFAR-10.
+CIFAR-10 is a much more simple dataset with smaller images all being 32x32.</p>
+<p><img src="./DLRLIR_figure5.5.png" alt="Figure 5.5" title="Figure 5.5 from Deep Residual Learning for Image Recognition. Depicting a bottleneck block."></p>
+<p>The first layer, which is comparable to the stem of the ImageNet models, is composed of one 3x3 convolution. Three 3x3 convolutions in stacks of 2n layers follow. Their respective feature map sizes are 32x32,16x16 and 8x8. As the output map size halves, the filter numbers double starting from 16 and ending in 64. Since CIFAR-10 contains 10 classes the last layer contains a 10 way fully connected layer. Thus the final number of layers become 3 * 2n + 2(head and stem) or 6n + 2.</p>
+<p>Thus ResNets that the original authors designed for CIFAR-10 become ResNet20 (n=3), ResNet 32 (n=5), ResNet56 (n=9) all the way up to ResNet1202(n=200). In such deep regimes, however, the authors find that while they were successful in training the deep network to convergence, the validation accuracy is actually worse then for ResNet-101, a significantly simpler model.</p>
+<p>Depending on how you design your pipeline it is possible to use models meant for <strong>ImageNet on CIFAR-10 or vice versa</strong>. Some frameworks such as fast.ai make this easier. You might require more architectural changes beyond the bare minimum necessary (which would be to adjust the head and the input part of the stem to match input and output sizes) to satisfy your training and testing requirements, but this practice is actually not uncommon.</p>
+<p>When ResNets came out, many researchers and data scientists took note. Many projects and frameworks took ResNet and <em>added their own improvements</em>. Torch (which later became PyTorch) investigated various architectural changes regarding strides and location of BN and activations. In the end they changed the location of the stride = 2 in the 3x3 conv rather than the first 1x1 convolution in the block. 
+For a refresher, the <strong>downsampling would have been done by having the first 1x1 convolution of the first block of a stage have a stride of 2</strong>. This was done <strong>when the filter count is doubled and the feature map size is halved</strong> in each dimension. Instead Torch researchers proposed to have the <strong>first 3x3 convolution of the first block of each stage</strong> have a stride of 2.</p>
+<p>In the Torch codebase this version is <em>merely referred to as ResNet</em>. Some projects (such as Keras and NVIDIA) noted the difference and improvements called them ResNet v1.5. Most others follow torch and merely call their version merely <em>ResNet</em> or <em>ResNet v1</em> (as opposed to the following v2). TensorFlow notes the difference but still calls it v1. In other words, unless the authors of a paper or a model go out their way to mention that this directly follows the original paper and not subsequent enhancements, you can assume a “vanilla ResNet” is actually ResNet v1.5. (You can also read the code and look at where the stride is)</p>
+<p>The gluon CV toolkit also provides an extensive ResNet model zoo. Here, the slightly modified ResNet is called v1b(rather than v1.5). Their v1c further changes the stem into three 3x3 convolutions from a single 7x7 convolution. v1d (also called ResNet-D) adds a 2x2 AvgPool layer with stride of 2 during downsampling to further preserve information (This path is the dotted shortcuts in the original paper). As previously mentioned, <em>when feature maps halve, the residual connection incorporates a 1x1 convolution to bridge the different dimensions in channels and feature map</em>. Since this convolution has a <em><strong>kernel size of 1x1 and stride of 2, some information is lost</strong></em>. The 2x2 AvgPooling expands the receptive field to cover all inputs, correcting this problem. (The 2018 paper <a href="https://arxiv.org/abs/1812.01187">Bag of Tricks for Image Classification with Convolutional Neural Networks</a> summarize these changes well)</p>
+<p><img src="./BoT_figure2.png" alt="Figure 2" title="Figure 2 from Bag of Tricks for Image Classification with Convolutional Neural Networks."></p>
+<p>Alongside the original ResNet v1 (which is actually a slightly improved v1.5), ResNet-D is another widely used modern variant.</p>
+<p>In 2016, the authors of ResNet themselves revisit various skip connection topologies and strategies. The paper can be found here <a href="https://arxiv.org/abs/1603.05027">Identity Mappings in Deep Residual Networks</a> and part of the code can be found in the  github <a href="https://github.com/KaimingHe/ResNet-1k-layers">here</a>. The models introduced here are often considered as ResNet v2. In v2 the order of convolutions, BN and ReLu is adjusted. While v1 would do Conv-&gt; BN-&gt;ReLu, v2 goes BN-&gt;ReLu-&gt;Conv.</p>
+<p><img src="./IMDRN_figure1.png" alt="Figure 1" title="Figure 1"></p>
+<p>This change allowed them to train much deeper networks than their original paper. Although put forward by the original authors of ResNet, ResNet v2 (which is not what the authors called it) did not catch on as much as v1.5 or v1d. (v2 is not the only models they put forward in the paper, but other models such as PreResNet are much less prominent in the wild even when compared to v2)</p>
+<p>Now that we have a descriptive understanding of ResNets and their immediate pedigree, in the next article, I will see how one is actually implemented in code.</p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="/tags/resnet">ResNet</a></span>
+                </p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>2567 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-03-22 14:23 &#43;0900</p>
+        </div>
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+            <span></span>
+            <span> <a href="/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+
+
+
+    </body>
+</html>
